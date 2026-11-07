@@ -11,19 +11,22 @@ const path = require('path');
   const baseUrl = process.env.WORKER_DOMAIN || 'https://checkin.twitchevent.workers.dev';
   const obsKey = process.env.OBS_KEY || '';
   
-  // 🌟 關鍵修正：使用 encodeURIComponent 完美保護金鑰中的特殊符號（如 +、/ 等）
-  const targetUrl = `${baseUrl}/checkin.html?preview=true&key=${encodeURIComponent(obsKey)}`;
+  const targetUrl = `${baseUrl}/?preview=true&key=${encodeURIComponent(obsKey)}`;
 
   console.log('正在前往預覽網址:', targetUrl);
   
   try {
-    // 2. 前往正確的 /checkin.html 頁面
+    // 2. 前往網頁並等待網路閒置
     await page.goto(targetUrl, { 
       waitUntil: 'networkidle',
       timeout: 60000 
     });
 
-    // 3. 強制讓日曆元件顯示出來
+    // 🌟 聽你的！進入後先等待 5 秒，讓所有前端 JS 與樣式完全渲染
+    console.log('已進入網頁，正在等待 5 秒鐘讓內容完全渲染...');
+    await page.waitForTimeout(5000);
+
+    // 3. 強制讓 #calendarWidget 顯示出來（加上 .show 類別）
     await page.evaluate(() => {
       const widget = document.getElementById('calendarWidget');
       if (widget) {
@@ -31,28 +34,26 @@ const path = require('path');
       }
     });
 
-    // 4. 等待 2 秒讓動畫完成
-    await page.waitForTimeout(2000);
+    // 4. 再給 1 秒讓顯示動畫穩定
+    await page.waitForTimeout(1000);
 
-    // 5. 鎖定 ID 進行精準截圖
+    // 5. 🎯 鎖定目標：#calendarWidget 進行精準局部截圖
     const widgetSelector = '#calendarWidget';
-    const widgetElement = await page.$(widgetSelector);
-    
-    if (!widgetElement) {
-      throw new Error('找不到 #calendarWidget 元素');
-    }
+    await page.waitForSelector(widgetSelector, { timeout: 15000 });
 
+    const widgetElement = await page.$(widgetSelector);
     const imagePath = path.join(__dirname, '../checkinpreview.png');
     await widgetElement.screenshot({ path: imagePath });
     
-    console.log('✅ 日曆卡片精準截圖成功，已儲存至:', imagePath);
+    console.log('✅ 成功鎖定 #calendarWidget，精準截圖已儲存至:', imagePath);
 
   } catch (err) {
-    console.log('❌ 發生錯誤，正在印出當前網頁內容進行診斷...');
-    const htmlContent = await page.content();
-    console.log('--- 實際載入的網頁 HTML 開始 ---');
-    console.log(htmlContent.substring(0, 1500));
-    console.log('--- 實際載入的網頁 HTML 結束 ---');
+    console.log('❌ 發生錯誤！目前的網頁標題:', await page.title());
+    console.log('目前的完整網址:', page.url());
+    
+    // 拍下當前畫面存成圖片供診斷
+    const errImagePath = path.join(__dirname, '../checkinpreview.png');
+    await page.screenshot({ path: errImagePath, fullPage: true });
     
     throw err;
   } finally {
