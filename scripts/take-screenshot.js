@@ -1,6 +1,5 @@
 const { chromium } = require('playwright');
 const path = require('path');
-
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
