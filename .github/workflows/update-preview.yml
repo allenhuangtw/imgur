@@ -1,0 +1,38 @@
+name: Update Daily Calendar Preview
+
+on:
+  schedule:
+    - cron: '0 16 * * *' # 台灣時間每天晚上 12 點 (午夜 00:00) 執行，對應 UTC 16:00
+  workflow_dispatch: # 支援在 GitHub 官網手動點擊按鈕測試
+
+jobs:
+  update-screenshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install playwright
+
+      - name: Install Playwright Chromium Browser
+        run: npx playwright install chromium
+
+      - name: Run screenshot script
+        env:
+          WORKER_DOMAIN: "https://你的專案網址.workers.dev"
+          OBS_KEY: ${{ secrets.OBS_KEY }}
+        run: node scripts/take-screenshot.js
+
+      - name: Commit and push updated image
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          git add "螢幕擷取畫面 2026-11-02 104804.png"
+          git commit -m "chore: auto-update daily calendar preview image [skip ci]" || echo "No changes to commit"
+          git push
