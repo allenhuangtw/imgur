@@ -25,7 +25,7 @@ jobs:
 
       - name: Run screenshot script
         env:
-          WORKER_DOMAIN: "https://你的專案網址.workers.dev"
+          WORKER_DOMAIN: "https://checkin.twitchevent.workers.dev"
           OBS_KEY: ${{ secrets.OBS_KEY }}
         run: node scripts/take-screenshot.js
 
