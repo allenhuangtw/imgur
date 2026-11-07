@@ -27,7 +27,7 @@ const path = require('path');
   const element = await page.$('.widget-wrapper');
   
   // 覆蓋你原本的預覽圖片檔名（請確保檔名跟你在專案裡用的一致）
-  const imagePath = path.join(__dirname, '../螢幕擷取畫面 2026-11-02 104804.png');
+  const imagePath = path.join(__dirname, '../checkinpreview.png');
   await element.screenshot({
     path: imagePath,
     omitBackground: true // 保留透明背景
