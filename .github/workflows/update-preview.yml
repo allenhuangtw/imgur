@@ -25,14 +25,14 @@ jobs:
 
       - name: Run screenshot script
         env:
-          WORKER_DOMAIN: "https://checkin.twitchevent.workers.dev/"
+          WORKER_DOMAIN: "https://你的專案網址.workers.dev"
           OBS_KEY: ${{ secrets.OBS_KEY }}
         run: node scripts/take-screenshot.js
 
       - name: Commit and push updated image
-      run: |
-        git config --global user.name "GitHub Actions Bot"
-        git config --global user.email "actions@github.com"
-        git add "checkinpreview.png"
-        git commit -m "chore: auto-update daily calendar preview image [skip ci]" || echo "No changes to commit"
-        git push
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          git add checkinpreview.png
+          git commit -m "chore: auto-update daily calendar preview image [skip ci]" || echo "No changes to commit"
+          git push
