@@ -11,9 +11,10 @@ const path = require('path');
   const baseUrl = process.env.WORKER_DOMAIN || 'https://checkin.twitchevent.workers.dev';
   const obsKey = process.env.OBS_KEY || '';
   
-  const targetUrl = `${baseUrl}/?preview=true&key=${encodeURIComponent(obsKey)}`;
+  // 🎯 鎖定正確的 /checkin.html 路徑，並用 encodeURIComponent 保護金鑰
+  const targetUrl = `${baseUrl}/checkin.html?preview=true&key=${encodeURIComponent(obsKey)}`;
 
-  console.log('正在前往預覽網址:', targetUrl);
+  console.log('正在前往正確的預覽網址:', targetUrl);
   
   try {
     // 2. 前往網頁並等待網路閒置
@@ -22,7 +23,7 @@ const path = require('path');
       timeout: 60000 
     });
 
-    // 🌟 聽你的！進入後先等待 5 秒，讓所有前端 JS 與樣式完全渲染
+    // 🌟 聽你的！進入後紮實等待 5 秒，讓所有前端 JS、頭像與樣式完全渲染
     console.log('已進入網頁，正在等待 5 秒鐘讓內容完全渲染...');
     await page.waitForTimeout(5000);
 
@@ -51,7 +52,6 @@ const path = require('path');
     console.log('❌ 發生錯誤！目前的網頁標題:', await page.title());
     console.log('目前的完整網址:', page.url());
     
-    // 拍下當前畫面存成圖片供診斷
     const errImagePath = path.join(__dirname, '../checkinpreview.png');
     await page.screenshot({ path: errImagePath, fullPage: true });
     
