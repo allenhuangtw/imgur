@@ -5,36 +5,36 @@ const path = require('path');
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
 
+  // 設定畫面大小
   await page.setViewportSize({ width: 1200, height: 800 });
 
   const baseUrl = process.env.WORKER_DOMAIN || 'https://checkin.twitchevent.workers.dev';
   const obsKey = process.env.OBS_KEY || '';
   
-  // 直接使用根目錄，不加 /checkin.html
-  const targetUrl = new URL(baseUrl);
-  targetUrl.searchParams.set('preview', 'true');
-  if (obsKey) {
-    targetUrl.searchParams.set('key', obsKey);
-  }
+  // 組合出跟你在瀏覽器成功打開一模一樣的完整正確網址
+  const targetUrl = `${baseUrl}/checkin.html?preview=true&key=${obsKey}`;
 
-  console.log('正在前往根目錄預覽網址:', targetUrl.toString());
+  console.log('正在前往正確的預覽網址進行截圖:', targetUrl);
   
   try {
-    await page.goto(targetUrl.toString(), { 
+    await page.goto(targetUrl, { 
       waitUntil: 'networkidle',
       timeout: 60000 
     });
 
+    // 鎖定固定 ID 的日曆卡片
     const widgetSelector = '#calendarWidget';
     await page.waitForSelector(widgetSelector, { timeout: 15000 });
 
+    // 進行局部精準截圖
     const widgetElement = await page.$(widgetSelector);
     const imagePath = path.join(__dirname, '../checkinpreview.png');
     await widgetElement.screenshot({ path: imagePath });
-    console.log('✅ 日曆卡片精準截圖成功！');
+    
+    console.log('✅ 日曆卡片精準截圖成功，已儲存至:', imagePath);
 
   } catch (err) {
-    console.log('❌ 發生超時，印出當前畫面原始碼進行診斷...');
+    console.log('❌ 發生超時或找不到元素，正在拍攝當前畫面進行診斷...');
     const errImagePath = path.join(__dirname, '../checkinpreview.png');
     await page.screenshot({ path: errImagePath, fullPage: true });
     
