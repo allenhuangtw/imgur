@@ -16,7 +16,7 @@ const path = require('path');
   // 🎯 組合正確的 /checkin.html 網址
   const targetUrl = `${baseUrl}/checkin.html?preview=true&key=${encodeURIComponent(obsKey)}&font=wenkai`;
 
-  console.log('正在前往正確的預覽網址:', targetUrl);
+  console.log('正在前往預覽網址:', `${baseUrl}/checkin.html?preview=true&key=***&font=wenkai`);
   
   try {
     // 2. 前往網頁並等待網路閒置
@@ -64,7 +64,7 @@ const path = require('path');
 
   } catch (err) {
     console.log('❌ 發生錯誤！目前的網頁標題:', await page.title());
-    console.log('目前的完整網址:', page.url());
+    console.log('目前的網址:', page.url().replace(/key=[^&]*/, 'key=***'));
     
     const errImagePath = path.join(__dirname, '../checkinpreview.png');
     await page.screenshot({ path: errImagePath, fullPage: true });
