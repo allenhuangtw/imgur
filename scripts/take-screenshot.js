@@ -14,7 +14,7 @@ const path = require('path');
   const obsKey = (process.env.OBS_KEY || '').trim();
   
   // 🎯 組合正確的 /checkin.html 網址
-  const targetUrl = `${baseUrl}/checkin.html?preview=true&key=${encodeURIComponent(obsKey)}`;
+  const targetUrl = `${baseUrl}/checkin.html?preview=true&key=${encodeURIComponent(obsKey)}&font=wenkai`;
 
   console.log('正在前往正確的預覽網址:', targetUrl);
   
