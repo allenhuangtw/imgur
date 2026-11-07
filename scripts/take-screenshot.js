@@ -5,24 +5,37 @@ const path = require('path');
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
 
-  // 設定畫面大小
+  // 1. 設定瀏覽器視窗大小（確保畫面寬裕）
   await page.setViewportSize({ width: 1200, height: 800 });
 
-  // 組合你的完整預覽網址（帶有 preview=true 與 key）
-  const workerDomain = process.env.WORKER_DOMAIN || 'https://checkin.twitchevent.workers.dev';
+  // 2. 組合完整預覽網址 (自動帶入 key)
+  const baseUrl = process.env.WORKER_DOMAIN || 'https://checkin.twitchevent.workers.dev';
   const obsKey = process.env.OBS_KEY || '';
-  const targetUrl = `${workerDomain}/checkin.html?preview=true&key=${obsKey}`;
+  
+  const targetUrl = new URL('/checkin.html', baseUrl);
+  targetUrl.searchParams.set('preview', 'true');
+  if (obsKey) {
+    targetUrl.searchParams.set('key', obsKey);
+  }
 
-  console.log('正在前往預覽網址進行截圖...');
-  await page.goto(targetUrl, { waitUntil: 'networkidle' });
+  console.log('正在前往預覽網址進行精準截圖:', targetUrl.toString());
+  
+  // 3. 前往網頁並等待載入完成
+  await page.goto(targetUrl.toString(), { 
+    waitUntil: 'networkidle',
+    timeout: 60000 
+  });
 
-  // 等待實際的日曆或畫面容器載入（如果你的 class 不同可以再調整）
-  await page.waitForSelector('body', { timeout: 30000 });
+  // 4. 鎖定固定的 ID，確保網頁完全渲染
+  const widgetSelector = '#calendarWidget';[cite: 10]
+  await page.waitForSelector(widgetSelector, { timeout: 30000 });
 
-  // 儲存截圖到指定的檔名
+  // 5. 抓取該元素本身，進行「局部精準截圖」
+  const widgetElement = await page.$(widgetSelector);
   const imagePath = path.join(__dirname, '../checkinpreview.png');
-  await page.screenshot({ path: imagePath, fullPage: true });
+  
+  await widgetElement.screenshot({ path: imagePath });
 
-  console.log('截圖已成功儲存至:', imagePath);
+  console.log('日曆卡片精準截圖已成功儲存至:', imagePath);
   await browser.close();
 })();
