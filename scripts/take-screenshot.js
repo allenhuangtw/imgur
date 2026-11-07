@@ -10,7 +10,7 @@ const path = require('path');
 
   const baseUrl = process.env.WORKER_DOMAIN || 'https://checkin.twitchevent.workers.dev';
   
-  // 🌟 關鍵修正：加上 .trim() 自動清除金鑰前後可能不小心多出的空白或換行
+  // 🌟 加上 .trim() 自動清除金鑰前後可能不小心多出的空白或換行
   const obsKey = (process.env.OBS_KEY || '').trim();
   
   // 🎯 組合正確的 /checkin.html 網址
@@ -37,18 +37,30 @@ const path = require('path');
       }
     });
 
-    // 5. 再給 1 秒讓動畫穩定
+    // 🌟 5. 將網頁背景清除，改為完全透明
+    await page.evaluate(() => {
+      document.body.style.backgroundColor = 'transparent';
+      const htmlEl = document.documentElement;
+      if (htmlEl) htmlEl.style.backgroundColor = 'transparent';
+    });
+
+    // 6. 再給 1 秒讓動畫穩定
     await page.waitForTimeout(1000);
 
-    // 6. 🎯 鎖定目標：#calendarWidget 進行精準局部截圖
+    // 7. 🎯 鎖定目標：#calendarWidget 進行精準局部截圖
     const widgetSelector = '#calendarWidget';
     await page.waitForSelector(widgetSelector, { timeout: 15000 });
 
     const widgetElement = await page.$(widgetSelector);
     const imagePath = path.join(__dirname, '../checkinpreview.png');
-    await widgetElement.screenshot({ path: imagePath });
     
-    console.log('✅ 成功鎖定 #calendarWidget，精準截圖已儲存至:', imagePath);
+    // 🌟 關鍵：omitBackground: true 讓截圖背景變成透明（支援 PNG 格式）
+    await widgetElement.screenshot({ 
+      path: imagePath,
+      omitBackground: true 
+    });
+    
+    console.log('✅ 成功鎖定 #calendarWidget，透明背景精準截圖已儲存至:', imagePath);
 
   } catch (err) {
     console.log('❌ 發生錯誤！目前的網頁標題:', await page.title());
