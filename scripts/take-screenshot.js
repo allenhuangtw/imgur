@@ -3,10 +3,11 @@ const path = require('path');
 
 (async () => {
   const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage();
-
-  // 1. 設定畫面大小
-  await page.setViewportSize({ width: 1200, height: 800 });
+  const context = await browser.newContext({
+    timezoneId: 'Asia/Taipei',
+    viewport: { width: 1200, height: 800 }
+  });
+  const page = await context.newPage();
 
   const baseUrl = process.env.WORKER_DOMAIN || 'https://checkin.twitchevent.workers.dev';
   
