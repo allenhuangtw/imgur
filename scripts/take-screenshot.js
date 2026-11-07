@@ -9,9 +9,11 @@ const path = require('path');
   await page.setViewportSize({ width: 1200, height: 800 });
 
   const baseUrl = process.env.WORKER_DOMAIN || 'https://checkin.twitchevent.workers.dev';
-  const obsKey = process.env.OBS_KEY || '';
   
-  // 🎯 鎖定正確的 /checkin.html 路徑，並用 encodeURIComponent 保護金鑰
+  // 🌟 關鍵修正：加上 .trim() 自動清除金鑰前後可能不小心多出的空白或換行
+  const obsKey = (process.env.OBS_KEY || '').trim();
+  
+  // 🎯 組合正確的 /checkin.html 網址
   const targetUrl = `${baseUrl}/checkin.html?preview=true&key=${encodeURIComponent(obsKey)}`;
 
   console.log('正在前往正確的預覽網址:', targetUrl);
@@ -23,11 +25,11 @@ const path = require('path');
       timeout: 60000 
     });
 
-    // 🌟 聽你的！進入後紮實等待 5 秒，讓所有前端 JS、頭像與樣式完全渲染
+    // 3. 進入後等待 5 秒讓前端完全渲染
     console.log('已進入網頁，正在等待 5 秒鐘讓內容完全渲染...');
     await page.waitForTimeout(5000);
 
-    // 3. 強制讓 #calendarWidget 顯示出來（加上 .show 類別）
+    // 4. 強制讓 #calendarWidget 顯示出來（加上 .show 類別）
     await page.evaluate(() => {
       const widget = document.getElementById('calendarWidget');
       if (widget) {
@@ -35,10 +37,10 @@ const path = require('path');
       }
     });
 
-    // 4. 再給 1 秒讓顯示動畫穩定
+    // 5. 再給 1 秒讓動畫穩定
     await page.waitForTimeout(1000);
 
-    // 5. 🎯 鎖定目標：#calendarWidget 進行精準局部截圖
+    // 6. 🎯 鎖定目標：#calendarWidget 進行精準局部截圖
     const widgetSelector = '#calendarWidget';
     await page.waitForSelector(widgetSelector, { timeout: 15000 });
 
