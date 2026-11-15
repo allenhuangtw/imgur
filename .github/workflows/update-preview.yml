@@ -23,6 +23,13 @@ jobs:
       - name: Install Playwright Chromium Browser
         run: npx playwright install chromium
 
+      # 🌟 在這裡加入安裝「霞鶩文楷」的步驟
+      - name: Install LXGW Wenkai Font
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-lxgw-wenkai
+          fc-cache -f -v
+
       - name: Run screenshot script
         env:
           WORKER_DOMAIN: "https://www.twitchevent.workers.dev"
