@@ -1,5 +1,6 @@
 const { chromium } = require('playwright');
 const path = require('path');
+
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
@@ -8,19 +9,26 @@ const path = require('path');
   });
   const page = await context.newPage();
 
- const baseUrl = process.env.WORKER_DOMAIN || 'https://www.twitchevent.workers.dev';
+  const baseUrl = process.env.WORKER_DOMAIN || 'https://www.twitchevent.workers.dev';
   
-  // 🌟 因為檔案搬到了 /checkin 路徑，這裡必須加上 /checkin/
+  // 🌟 1. 必須先在這裡宣告並取得環境變數
+  const obsKey = (process.env.OBS_KEY || '').trim();
+  
+  // 🎯 2. 確保路徑包含 /checkin/ 並且正確帶入 obsKey
   const targetUrl = `${baseUrl}/checkin/checkin.html?preview=true&key=${encodeURIComponent(obsKey)}&font=wenkai`;
 
   console.log('正在前往預覽網址:', `${baseUrl}/checkin/checkin.html?preview=true&key=***&font=wenkai`);
   
   try {
-    // 2. 前往網頁並等待網路閒置
     await page.goto(targetUrl, { 
       waitUntil: 'networkidle',
       timeout: 60000 
     });
+
+    // 強制等待字型完全載入
+    await page.evaluate(() => document.fonts.ready);
+    await page.waitForTimeout(5000);
+    // ... 後續保持原樣 ...
 
     // 🌟 關鍵：強制等待字型完全載入，徹底解決方框亂碼問題
     await page.evaluate(() => document.fonts.ready);
