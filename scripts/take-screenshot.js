@@ -15,7 +15,7 @@ const path = require('path');
   const obsKey = (process.env.OBS_KEY || '').trim();
   
   // 🎯 2. 確保路徑包含 /checkin/ 並且正確帶入 obsKey
-  const targetUrl = `${baseUrl}/checkin/checkin.html?preview=true&key=${encodeURIComponent(obsKey)}&font=wenkai`;
+  const targetUrl = `${baseUrl}/checkin/checkin.html?preview=true&key=${encodeURIComponent(obsKey)}&font=lxgw-wenkai`;
 
   console.log('正在前往預覽網址:', `${baseUrl}/checkin/checkin.html?preview=true&key=***&font=wenkai`);
   
