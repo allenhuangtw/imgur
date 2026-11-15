@@ -8,15 +8,12 @@ const path = require('path');
   });
   const page = await context.newPage();
 
-  const baseUrl = process.env.WORKER_DOMAIN || 'https://checkin.twitchevent.workers.dev';
+ const baseUrl = process.env.WORKER_DOMAIN || 'https://www.twitchevent.workers.dev';
   
-  // 🌟 加上 .trim() 自動清除金鑰前後可能不小心多出的空白或換行
-  const obsKey = (process.env.OBS_KEY || '').trim();
-  
-  // 🎯 組合正確的 /checkin.html 網址
-  const targetUrl = `${baseUrl}/checkin.html?preview=true&key=${encodeURIComponent(obsKey)}&font=wenkai`;
+  // 🌟 因為檔案搬到了 /checkin 路徑，這裡必須加上 /checkin/
+  const targetUrl = `${baseUrl}/checkin/checkin.html?preview=true&key=${encodeURIComponent(obsKey)}&font=wenkai`;
 
-  console.log('正在前往預覽網址:', `${baseUrl}/checkin.html?preview=true&key=***&font=wenkai`);
+  console.log('正在前往預覽網址:', `${baseUrl}/checkin/checkin.html?preview=true&key=***&font=wenkai`);
   
   try {
     // 2. 前往網頁並等待網路閒置
@@ -24,6 +21,9 @@ const path = require('path');
       waitUntil: 'networkidle',
       timeout: 60000 
     });
+
+    // 🌟 關鍵：強制等待字型完全載入，徹底解決方框亂碼問題
+    await page.evaluate(() => document.fonts.ready);
 
     // 3. 進入後等待 5 秒讓前端完全渲染
     console.log('已進入網頁，正在等待 5 秒鐘讓內容完全渲染...');
